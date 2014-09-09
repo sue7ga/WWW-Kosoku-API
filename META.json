@@ -53,5 +53,16 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/sue7ga/WWW-Kosoku-API/issues"
+      },
+      "homepage" : "https://github.com/sue7ga/WWW-Kosoku-API",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/sue7ga/WWW-Kosoku-API.git",
+         "web" : "https://github.com/sue7ga/WWW-Kosoku-API"
+      }
+   },
    "version" : "0.01"
 }

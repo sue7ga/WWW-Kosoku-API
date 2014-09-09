@@ -35,7 +35,7 @@ sub response{
  my $self = shift;
  my $url = URI->new(BASE_URL);
  $url->query_form(f => $self->f,t => $self->t,c => $self->c);
- my $response = $self->furl->get($url); 
+ my $response = $self->furl->get($url);
  my $ref = eval{
    my $xs = new XML::Simple();
    $xs->XMLin($response->content);
@@ -49,10 +49,9 @@ sub response{
 sub get_section{
  my $self = shift;
  my $ref = $self->response;
- my @Details = @{$ref->{Routes}->{Route}->[0]->{Details}->{Section}};
- return @Details; 
+ my @Details = @{$ref->{Routes}->{Route}->[1]->{Details}->{Section}};
+ return @Details;
 }
-
 
 1;
 

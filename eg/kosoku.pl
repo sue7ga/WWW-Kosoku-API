@@ -7,23 +7,38 @@ use File::Basename 'dirname';
 use lib (
     File::Spec->catdir(dirname(__FILE__),qw/.. lib/),
 );
+use Mojolicious::Lite;
 use WWW::Kosoku::API;
-
-my $kosoku = WWW::Kosoku::API->new(f => '渋谷',t => '浜松',c => '普通車');
-
 use Data::Dumper;
 
-my @subsection = $kosoku->get_section;
+get '/' => 'index';
 
-for my $section(@subsection){
-  my $subsection = $section->{SubSections}->{SubSection};
-  if(ref $subsection  eq 'ARRAY'){
-     for my $sub(@{$subsection}){
-         print $sub->{From},"->",$sub->{To},"\n";
-     }
-  }elsif(ref $subsection eq 'HASH'){
-         print $subsection->{From},"->",$subsection->{To},"\n";
-  }
-}
+post '/create' => sub{
+   my $self = shift;
+ 
+   my $params = $self->req->body_params->to_hash;
+   my $from = $params->{from} ||= "hoge";
+   my $to   = $params->{to} ||= "foo";
 
+   my $kosoku = WWW::Kosoku::API->new(f => $from,t => $to,c => '普通車');
+   my @details =  $kosoku->get_section;
+   
+   
+   
+   $self->render(text => "@details");
+};
 
+app->start;
+
+__DATA__
+
+@@ index.html.ep
+<html>
+  <body>
+    <form method="post" action="<%= url_for('create')%>">
+      From:<input type="text" name="from"><br>  
+      To:<input type="text" name="to"><br>  
+      <input type="submit" value="Sumit">
+    </form>
+  </body>
+</html>
