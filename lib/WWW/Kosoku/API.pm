@@ -117,6 +117,15 @@ sub get_summary_by_routenumber{
  return $ref->{Routes}->{Route}->[$routenumber]->{Summary};
 }
 
+sub get_all_summary{
+ my $self = shift;
+ my $summary_list = [];
+ for my $count(0..$self->get_route_count-1){
+    push @$summary_list,$self->get_summary_by_routenumber($count);
+ }
+ return $summary_list;
+}
+
 #get route count
 sub get_route_count{
  my $self = shift;
