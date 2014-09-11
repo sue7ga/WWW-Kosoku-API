@@ -9,7 +9,7 @@ use Furl;
 use XML::Simple;
 use Carp;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 
 use constant BASE_URL => 'http://kosoku.jp/api/route.php?';
 
