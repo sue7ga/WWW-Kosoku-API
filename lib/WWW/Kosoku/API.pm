@@ -46,6 +46,20 @@ sub response{
  return $ref;
 }
 
+use Data::Dumper;
+
+sub get_subsection{
+ my $self = shift;
+ my $subsection = [];
+ my $ref = $self->response;
+ for my $route(@{$ref->{Routes}->{Route}}){
+    for my $sec(@{$route->{Details}->{Section}}){
+       push @{$subsection},{$route->{RouteNo},$sec->{SubSections}->{SubSection}};
+    }
+ }
+  return $subsection;
+}
+
 sub get_section{
  my $self = shift;
  my $ref = $self->response;
