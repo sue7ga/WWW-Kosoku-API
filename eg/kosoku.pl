@@ -7,38 +7,16 @@ use File::Basename 'dirname';
 use lib (
     File::Spec->catdir(dirname(__FILE__),qw/.. lib/),
 );
-use Mojolicious::Lite;
 use WWW::Kosoku::API;
 use Data::Dumper;
+{
+ package Data::Dumper;
+ sub qquote {return shift;}
+}
+$Data::Dumper::Useperl = 1;
 
-get '/' => 'index';
+my $kosoku = WWW::Kosoku::API->new(f => '渋谷', t => '浜松', c => '普通車');
 
-post '/create' => sub{
-   my $self = shift;
- 
-   my $params = $self->req->body_params->to_hash;
-   my $from = $params->{from} ||= "hoge";
-   my $to   = $params->{to} ||= "foo";
+my $subsections = $kosoku->get_subsections_by_routenumber(10);
 
-   my $kosoku = WWW::Kosoku::API->new(f => $from,t => $to,c => '普通車');
-   my @details =  $kosoku->get_section;
-   
-   
-   
-   $self->render(text => "@details");
-};
-
-app->start;
-
-__DATA__
-
-@@ index.html.ep
-<html>
-  <body>
-    <form method="post" action="<%= url_for('create')%>">
-      From:<input type="text" name="from"><br>  
-      To:<input type="text" name="to"><br>  
-      <input type="submit" value="Sumit">
-    </form>
-  </body>
-</html>
+print Dumper $subsections;
