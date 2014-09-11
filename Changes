@@ -2,7 +2,7 @@ Revision history for Perl extension WWW-Kosoku-API
 
 {{$NEXT}}
 
-0.02 2014-09-11T01:36:52Z
+0.03 2014-09-11T19:05:38Z
 
-    - 0.02 added get_subsection
+    - 0.03 tests added 
 
