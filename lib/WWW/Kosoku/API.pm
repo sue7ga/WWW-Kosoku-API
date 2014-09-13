@@ -9,7 +9,7 @@ use Furl;
 use XML::Simple;
 use Carp;
 
-our $VERSION = "0.05";
+our $VERSION = "0.06";
 
 use constant BASE_URL => 'http://kosoku.jp/api/route.php?';
 
@@ -31,29 +31,31 @@ has furl => (
  },
 );
 
-sub response{
- my $self = shift;
- my $url = URI->new(BASE_URL);
- $url->query_form(f => $self->f,t => $self->t,c => $self->c);
- my $response = $self->furl->get($url);
- my $ref = eval{
-   my $xs = new XML::Simple();
-   $xs->XMLin($response->decoded_content);
- };
- if($@){
-   croak("Oh! faild reading XML");
- }
- return $ref;
-}
-
-use Data::Dumper;
+has response => (
+   is => 'ro',
+   isa => 'HashRef',
+   default => sub{ 
+    my $self = shift;
+    my $url = URI->new(BASE_URL);
+    $url->query_form(f => $self->f,t => $self->t,c => $self->c);
+    my $response = $self->furl->get($url);
+    my $res = eval{
+    my $xml = new XML::Simple();
+    $xml->XMLin($response->decoded_content);
+   };
+   if($@){
+    croak("Oh! faild reading XML");
+   }
+   return $res;
+   },
+);
 
 #routenumber and subsections
 sub get_subsection{
  my $self = shift;
  my $subsection = [];
- my $ref = $self->response;
- for my $route(@{$ref->{Routes}->{Route}}){
+ my $res = $self->response;
+ for my $route(@{$res->{Routes}->{Route}}){
     for my $sec(@{$route->{Details}->{Section}}){
        push @{$subsection},{$route->{RouteNo},$sec->{SubSections}->{SubSection}};
     }
@@ -64,8 +66,8 @@ sub get_subsection{
 # section_count in routenumber
 sub get_section_no_by_routenumber{
  my ($self,$routenumber) = @_;
- my $ref = $self->response;
- return $ref->{Routes}->{Route}->[$routenumber]->{Details}->{No};
+ my $res = $self->response;
+ return $res->{Routes}->{Route}->[$routenumber]->{Details}->{No};
 }
 
 sub get_section_info_by_routenumber_sectionnumber{
@@ -76,8 +78,8 @@ sub get_section_info_by_routenumber_sectionnumber{
  if($sectionno < 0 || $sectionno >= $self->get_section_no_by_routenumber){
    croak("no section_no_number:$sectionno");
  }
- my $ref = $self->response;
- return $ref->{Routes}->{Route}->[$routenumber]->{Details}->{Section}->[$sectionno];
+ my $res = $self->response;
+ return $res->{Routes}->{Route}->[$routenumber]->{Details}->{Section}->[$sectionno];
 }
 
 #get subsection by routenumber and sectionnumber
@@ -89,8 +91,8 @@ sub get_subsection_by_routenumber_and_sectionnumber{
  if($sectionnumber < 0 || $sectionnumber >= $self->get_section_no_by_routenumber){
    croak("no section_no_number:$sectionnumber");
  }
- my $ref = $self->response;
- return $ref->{Routes}->{Route}->[$routenumber]->{Details}->{Section}->[$sectionnumber]->{SubSections}->{SubSection};
+ my $res = $self->response;
+ return $res->{Routes}->{Route}->[$routenumber]->{Details}->{Section}->[$sectionnumber]->{SubSections}->{SubSection};
 }
 
 #get section info by routenumber
@@ -99,8 +101,8 @@ sub get_section_by_routenumber{
  if($routenumber < 0 ||  $self->get_route_count <= $routenumber){
    croak("no routenumber:$routenumber");
  }
- my $ref = $self->response;
- return $ref->{Routes}->{Route}->[$routenumber]->{Details}->{Section};
+ my $res = $self->response;
+ return $res->{Routes}->{Route}->[$routenumber]->{Details}->{Section};
 }
 
 #get section toll by routenumber and sectionnumber
@@ -113,8 +115,8 @@ sub get_section_tolls_by_routenumber_and_sectionnumber{
 #get time and toll and legnth by routenumber
 sub get_summary_by_routenumber{
  my($self,$routenumber) = @_;
- my $ref = $self->response;
- return $ref->{Routes}->{Route}->[$routenumber]->{Summary};
+ my $res = $self->response;
+ return $res->{Routes}->{Route}->[$routenumber]->{Summary};
 }
 
 sub get_all_summary{
@@ -129,8 +131,8 @@ sub get_all_summary{
 #get route count
 sub get_route_count{
  my $self = shift;
- my $ref = $self->response;
- scalar @{$ref->{Routes}->{Route}};
+ my $res = $self->response;
+ scalar @{$res->{Routes}->{Route}};
 }
 
 # get subsectionsinfo by routenumber
@@ -140,19 +142,16 @@ sub get_subsections_by_routenumber{
    croak("no route number:$routenumber");
  }
  my $subsection = $self->get_subsection;
- my $sub_list = [];
+ my @sub_list;
  for my $sub (@{$subsection}){
-  if(defined $sub->{$routenumber}){
+  next if not defined $sub->{$routenumber};
    if(ref $sub->{$routenumber} eq 'ARRAY'){
-     for my $subsec(@{$sub->{$routenumber}}){
-       push @$sub_list,$subsec;
-     }
+       @sub_list = @{$sub->{$routenumber}};
    }elsif(ref $sub->{$routenumber} eq 'HASH'){
-       push @$sub_list,$sub->{$routenumber};
-   }
-  }
+       push @sub_list,$sub->{$routenumber};
+   }  
  }
- return $sub_list;
+ return \@sub_list;
 }
 
 sub get_subsections_and_sectioncount_by_routenumber{
@@ -161,14 +160,13 @@ sub get_subsections_and_sectioncount_by_routenumber{
  my $subsection_info = $self->get_subsection;
  my $sectioncount = 0;
  for my $key(@{$subsection_info}){
-   if(defined $key->{$routenumber}){
+    next if not defined $key->{$routenumber};
      if(ref $key->{$routenumber} eq 'ARRAY'){
-      push @$subsection,@{$key->{$routenumber}};
-    }elsif(ref $key->{$routenumber} eq 'HASH'){
-      push @$subsection,$key->{$routenumber};
-    }
+         push @$subsection,@{$key->{$routenumber}};
+     }elsif(ref $key->{$routenumber} eq 'HASH'){
+         push @$subsection,$key->{$routenumber};
+     }
     $sectioncount++;
-   }
  }
  return $sectioncount;
 }
