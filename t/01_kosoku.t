@@ -24,7 +24,6 @@ subtest 'RouteNo' => sub{
   is($kosoku->get_route_count,20);
 };
 
-
 subtest 'Summary' => sub{
   my $route1_summary = $kosoku->get_summary_by_routenumber(1);
   is($route1_summary->{TotalLength},279.2);
@@ -38,14 +37,15 @@ subtest 'Details' => sub{
 
 subtest 'Section' => sub{
   my $section = $kosoku->get_section_by_routenumber(1);
-  #is($section->[0]->{From},'渋谷');
-  #is($section->[0]->{To},'狩場');
+  print Dumper $section;
+  is($section->[0]->{From},'渋谷');
+  is($section->[0]->{To},'狩場');
   is($section->[0]->{Length},'53.2');
   is($section->[0]->{Order},'3');
   is($section->[0]->{Time},'52');
   is($section->[0]->{Tolls}->{No},2);
-  #is($section->[0]->{Tolls}->{Toll}->[0],'930円 通常料金');
-  #is($section->[0]->{Tolls}->{Toll}->[1],'930円 ETC料金');
+  is($section->[0]->{Tolls}->{Toll}->[0],'930円 通常料金');
+  is($section->[0]->{Tolls}->{Toll}->[1],'930円 ETC料金');
 };
 
 subtest 'SubSections' => sub{

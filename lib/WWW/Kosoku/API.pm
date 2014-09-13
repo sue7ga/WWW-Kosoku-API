@@ -9,7 +9,7 @@ use Furl;
 use XML::Simple;
 use Carp;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use constant BASE_URL => 'http://kosoku.jp/api/route.php?';
 
@@ -38,7 +38,7 @@ sub response{
  my $response = $self->furl->get($url);
  my $ref = eval{
    my $xs = new XML::Simple();
-   $xs->XMLin($response->content);
+   $xs->XMLin($response->decoded_content);
  };
  if($@){
    croak("Oh! faild reading XML");
