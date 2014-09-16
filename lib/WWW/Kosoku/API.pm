@@ -34,7 +34,7 @@ has furl => (
 has response => (
    is => 'ro',
    isa => 'HashRef',
-   default => sub{ 
+   default => sub{
     my $self = shift;
     my $url = URI->new(BASE_URL);
     $url->query_form(f => $self->f,t => $self->t,c => $self->c);
@@ -146,10 +146,10 @@ sub get_subsections_by_routenumber{
  for my $sub (@{$subsection}){
   next if not defined $sub->{$routenumber};
    if(ref $sub->{$routenumber} eq 'ARRAY'){
-       @sub_list = @{$sub->{$routenumber}};
+       push @sub_list,@{$sub->{$routenumber}};
    }elsif(ref $sub->{$routenumber} eq 'HASH'){
        push @sub_list,$sub->{$routenumber};
-   }  
+   }
  }
  return \@sub_list;
 }
@@ -172,6 +172,7 @@ sub get_subsections_and_sectioncount_by_routenumber{
 }
 
 1;
+
 
 
 __END__

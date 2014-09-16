@@ -2,7 +2,5 @@ Revision history for Perl extension WWW-Kosoku-API
 
 {{$NEXT}}
 
-0.06 2014-09-13T17:33:55Z
-
-    - 0.06 refactoring
+    - 0.07 test added
 
