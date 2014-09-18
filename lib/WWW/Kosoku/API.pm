@@ -9,7 +9,7 @@ use Furl;
 use XML::Simple;
 use Carp;
 
-our $VERSION = "0.08";
+our $VERSION = "0.09";
 
 use constant BASE_URL => 'http://kosoku.jp/api/route.php?';
 
@@ -65,7 +65,7 @@ sub get_subsection{
 
 # section_count in routenumber
 sub get_section_no_by_routenumber{
- my ($self,$routenumber) = @_;
+ my($self,$routenumber) = @_;
  my $res = $self->response;
  return $res->{Routes}->{Route}->[$routenumber]->{Details}->{No};
 }
@@ -169,7 +169,30 @@ sub get_subsections_and_sectioncount_by_routenumber{
      }
     $sectioncount++;
  }
- return $sectioncount;
+ return $subsection;
+}
+
+sub get_all_route_information{
+ my $self = shift;
+ my $infos = [];
+ my $route = $self->get_route_count;
+ for my $routecount(0..$route){
+   my $summary = $self->get_summary_by_routenumber($routecount);
+   my $routeinfo = {};
+   my $section_count = $self->get_section_no_by_routenumber($routecount);
+   my $section_info = [];
+   for my $sectioncount(0..$section_count-1){
+     my $section = {};
+     my $toll = $self->get_section_tolls_by_routenumber_and_sectionnumber($routecount,$sectioncount);
+     $section->{toll} = $toll;
+     $section->{subsections} = $self->get_subsection_by_routenumber_and_sectionnumber($routecount,$sectioncount);
+     push @$section_info,$section;
+   }
+   $routeinfo->{summary} = $summary;
+   $routeinfo->{section} = $section_info;
+   push @$infos,$routeinfo;
+ }
+ return $infos;
 }
 
 1;
